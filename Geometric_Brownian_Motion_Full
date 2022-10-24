@@ -6,6 +6,7 @@ import click
 import numpy as np
 import pandas as pd
 
+import matplotlib.pyplot as plt
 
 class GeometricBrownianMotionAssetSimulator:
     """
@@ -13,6 +14,7 @@ class GeometricBrownianMotionAssetSimulator:
     open-high-low-close-volume (OHLCV) based DataFrame to simulate
     asset pricing paths with Geometric Brownian Motion for pricing
     and a Pareto distribution for volume.
+
     It will output the results to a CSV with a randomly generated
     ticker smbol.
 
@@ -52,7 +54,8 @@ class GeometricBrownianMotionAssetSimulator:
         init_price,
         mu,
         sigma,
-        pareto_shape
+        pareto_shape,
+        graph
     ):
         self.start_date = start_date
         self.end_date = end_date
@@ -62,6 +65,7 @@ class GeometricBrownianMotionAssetSimulator:
         self.mu = mu
         self.sigma = sigma
         self.pareto_shape = pareto_shape
+        self.graph = graph
 
     def _generate_random_symbol(self):
         """
@@ -221,6 +225,10 @@ class GeometricBrownianMotionAssetSimulator:
         output_file = os.path.join(self.output_dir, '%s.csv' % symbol)
         data.to_csv(output_file, index=False, float_format='%.2f')
 
+    def _graph(self, data):
+        data.plot(x='date',y=['open', 'high', 'low', 'close'])
+        plt.show()
+
     def __call__(self):
         """
         The entrypoint for generating the asset OHLCV frame. Firstly this
@@ -230,10 +238,13 @@ class GeometricBrownianMotionAssetSimulator:
         """
         symbol = self._generate_random_symbol()
         data = self._create_empty_frame()
+        print(data.index)
         path = self._create_geometric_brownian_motion(data)
         self._append_path_to_data(data, path)
         self._append_volume_to_data(data)
         self._output_frame_to_dir(symbol, data)
+        if self.graph == '1':
+            self._graph(data)
 
 
 @click.command()
@@ -247,7 +258,9 @@ class GeometricBrownianMotionAssetSimulator:
 @click.option('--mu', 'mu', default='0.1', help='The drift parameter, \mu for the GBM SDE')
 @click.option('--sigma', 'sigma', default='0.3', help='The volatility parameter, \sigma for the GBM SDE')
 @click.option('--pareto-shape', 'pareto_shape', default='1.5', help='The shape of the Pareto distribution simulating the trading volume')
-def cli(num_assets, random_seed, start_date, end_date, output_dir, symbol_length, init_price, mu, sigma, pareto_shape):
+@click.option('--graph', 'graph', default='1', help='Display the graph')
+
+def cli(num_assets, random_seed, start_date, end_date, output_dir, symbol_length, init_price, mu, sigma, pareto_shape, graph):
     num_assets = int(num_assets)
     random_seed = int(random_seed)
     symbol_length = int(symbol_length)
@@ -268,7 +281,8 @@ def cli(num_assets, random_seed, start_date, end_date, output_dir, symbol_length
         init_price,
         mu,
         sigma,
-        pareto_shape
+        pareto_shape,
+        graph
     )
 
     # Create num_assets files by repeatedly calling
@@ -280,5 +294,5 @@ def cli(num_assets, random_seed, start_date, end_date, output_dir, symbol_length
 
 if __name__ == "__main__":
     cli()
-    
-python gbm.py --num-assets=5 --random-seed=41 --start-date='1993-01-01' --end-date='2022-07-31' --output-dir='.' --symbol-length=5 --init-price=100.0 --mu=0.1 --sigma=0.3 --pareto-shape=1.5
+
+#python Geometric_Brownian_Motion_Full --num-assets=5 --random-seed=41 --start-date='1993-01-01' --end-date='2022-07-31' --output-dir='.' --symbol-length=5 --init-price=100.0 --mu=0.1 --sigma=0.3 --pareto-shape=1.5 --graph=1
