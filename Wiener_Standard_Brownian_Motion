@@ -12,6 +12,6 @@ def brownianmotion(T,N):
         else:
             y.append(y[i]-sqrt(T/N))
     plt.plot(x,y)
-    plt.show()
+    plt.show() 
     
 brownianmotion(10,100000)

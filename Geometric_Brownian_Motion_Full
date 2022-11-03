@@ -226,7 +226,7 @@ class GeometricBrownianMotionAssetSimulator:
         data.to_csv(output_file, index=False, float_format='%.2f')
 
     def _graph(self, data):
-        data.plot(x='date',y=['open', 'high', 'low', 'close'])
+        data[['open', 'high', 'low', 'close']].plot()
         plt.show()
 
     def __call__(self):
